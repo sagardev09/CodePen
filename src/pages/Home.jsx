@@ -10,13 +10,16 @@ import UserProfile from "../components/UserProfile"
 import { signOut } from "firebase/auth";
 import { useDispatch } from "react-redux";
 import { SET_USER_NULL } from "../context/actions/Useractions";
+import { SEARCH_TERM } from "../context/actions/SearchActions"
 import { auth } from '../../utils/Firebase.config'
+import Profile from './profile'
 
 
 const Home = () => {
     const [isSidemenu, setisSidemenu] = useState(false)
     const [isProfile, setisProfile] = useState(false)
     const user = useSelector(state => state.user?.user)
+    const searcterm = useSelector(state => state.searchterm?.searchterm ? state.searchterm?.searchterm : "")
 
     const dispatch = useDispatch()
 
@@ -72,12 +75,14 @@ const Home = () => {
                     <div className="relative w-full bg-secondary rounded-lg">
                         <input
                             type="text"
+                            value={searcterm}
                             id="Search"
+                            onChange={(e) => dispatch(SEARCH_TERM(e.target.value))}
                             placeholder="Search for..."
                             className="w-full rounded-md outline-none border-none bg-transparent border-gray-200 text-primaryText py-2.5 pe-10 px-3 shadow-sm sm:text-sm"
                         />
                         <span className="absolute inset-y-0 end-0 grid w-10 place-content-center">
-                            <button type="button" className="text-primaryText hover:text-gray-700">
+                            <button className="text-primaryText hover:text-gray-700">
                                 <span className="sr-only">Search</span>
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -128,6 +133,7 @@ const Home = () => {
                     <Routes>
                         <Route path='/*' element={<Projects />} />
                         <Route path='/auth' element={<Signup />} />
+                        <Route path='/profile' element={<Profile />} />
                     </Routes>
                 </div>
                 <div className='absolute right-[45px] top-[90px]'
