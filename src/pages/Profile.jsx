@@ -5,11 +5,14 @@ import { db } from '../../utils/Firebase.config';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Bookmark } from 'lucide-react';
+import ProfileModal from '../components/ProfileModal';
+
 
 
 const Profile = () => {
 
     const user = useSelector(state => state.user?.user)
+    const [ismodal, setismodal] = useState(false)
     const [data, setdata] = useState([])
     const navigate = useNavigate()
 
@@ -27,14 +30,13 @@ const Profile = () => {
         }
     }
 
-
     useEffect(() => {
         getusercodes()
     }, [])
 
 
     return (
-        <div className='w-full h-full overflow-hidden flex flex-col gap-4 items-start justify-start py-6'>
+        <div className='w-full h-full overflow-hidden flex flex-col gap-4 items-start justify-start pt-6 relative'>
             {user && <div className='flex items-center justify-between w-full'>
                 <div className='flex items-center justify-center gap-4'>
                     <div>
@@ -105,6 +107,9 @@ const Profile = () => {
                         <p className="text-white text-xl font-bold">No Projects Found</p>
                     </>}
 
+            </div>
+            <div className='absolute h-screen w-screen top-[35%] left-[35%]  z-50 '>
+                {!ismodal && <ProfileModal user={user} />}
             </div>
         </div>
     )
