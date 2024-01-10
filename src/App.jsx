@@ -23,24 +23,32 @@ function App() {
 
 
   useEffect(() => {
-
     const unsubscribe = auth.onAuthStateChanged((userCred) => {
       if (userCred) {
-        setDoc(doc(db, "users", userCred?.uid), userCred?.providerData[0]).then(() => {
-          // todo
-          disptach(SET_USER(userCred?.providerData[0]))
-          navigate("/home/projects", { replace: true })
-        })
-      } else {
-        navigate("/home/auth", { replace: true })
-      }
-      setInterval(() => {
-        setisloding(false)
-      }, 2000);
-    })
-    return () => unsubscribe()
+        const userDocRef = doc(db, "users", userCred.providerData[0].uid);
 
-  }, [])
+        const userData = {
+          ...userCred.providerData[0],
+          bio: "Your Default Bio Here",
+        };
+
+        setDoc(userDocRef, userData).then(() => {
+          // todo
+          disptach(SET_USER(userData));
+          navigate("/home/projects", { replace: true });
+        });
+      } else {
+        navigate("/home/auth", { replace: true });
+      }
+
+      setInterval(() => {
+        setisloding(false);
+      }, 2000);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
 
   useEffect(() => {
 

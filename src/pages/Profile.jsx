@@ -1,19 +1,25 @@
-import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from '../../utils/Firebase.config';
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { collection, query, where, getDocs, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { toast } from 'react-toastify';
+import { db, storage } from '../../utils/Firebase.config';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Bookmark } from 'lucide-react';
 import ProfileModal from '../components/ProfileModal';
+import { SET_USER } from '../context/actions/Useractions';
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 
 
 
 const Profile = () => {
 
     const user = useSelector(state => state.user?.user)
+    const dispatch = useDispatch()
     const [ismodal, setismodal] = useState(false)
     const [data, setdata] = useState([])
+    const [bio, setbio] = useState("");
+    const [profilepic, setprofilepic] = useState(user?.photoURL)
     const navigate = useNavigate()
 
     const getusercodes = async () => {
@@ -30,6 +36,42 @@ const Profile = () => {
         }
     }
 
+    const updateProfile = async () => {
+        try {
+            if (!user || !user.uid) {
+                console.error("User or user UID is missing.");
+                return;
+            }
+
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDocSnapshot = await getDoc(userDocRef);
+            const storageRef = ref(storage, 'profilePictures/' + user?.uid)
+
+            if (userDocSnapshot.exists()) {
+                console.log("Document exists. Updating bio:", bio);
+                const uploadTask = uploadBytesResumable(storageRef, profilepic);
+                await uploadTask;
+
+                const downloadURL = await getDownloadURL(storageRef);
+
+                await updateDoc(userDocRef, {
+                    bio: bio || "",
+                    photoURL: downloadURL,
+
+                });
+                dispatch(SET_USER({ ...user, bio: bio, photoURL: downloadURL }))
+                toast.success('Profile updated successfully!');
+                setismodal(false)
+            } else {
+                console.log("Document doesn't exist. Cannot update.");
+                toast.error('Error updating profile. User document not found.');
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            toast.error('Error updating profile. Please try again.');
+        }
+    };
+
     useEffect(() => {
         getusercodes()
     }, [])
@@ -44,11 +86,11 @@ const Profile = () => {
                     </div>
                     <div className='flex flex-col gap-2'>
                         <h5 className='text-white'>{user?.displayName}</h5>
-                        <h5 className='text-white'>Bio :</h5>
+                        <h5 className='text-white'>Bio : {user?.bio}</h5>
                     </div>
                 </div>
                 <div>
-                    <motion.button whileTap={{ scale: 0.9 }} className='bg-purple-500 p-2 text-white rounded-md text-sm px-3'>Edit Profile</motion.button>
+                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setismodal(!ismodal)} className='bg-purple-500 p-2 text-white rounded-md text-sm px-3'>Edit Profile</motion.button>
                 </div>
             </div>}
             <div className='h-full pt-2'>
@@ -109,7 +151,7 @@ const Profile = () => {
 
             </div>
             <div className='absolute h-screen w-screen top-[35%] left-[35%]  z-50 '>
-                {!ismodal && <ProfileModal user={user} />}
+                {ismodal && <ProfileModal user={user} updateProfile={updateProfile} bio={bio} setbio={setbio} profilepic={profilepic} setprofilepic={setprofilepic} />}
             </div>
         </div>
     )

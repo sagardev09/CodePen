@@ -7,7 +7,6 @@ const githubprovider = new GithubAuthProvider();
 export const signinwithgoogle = async () => {
     await signInWithRedirect(auth, googleProvider).then(userCred => {
         window.location.reload()
-
     })
 }
 
