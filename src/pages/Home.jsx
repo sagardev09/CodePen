@@ -129,7 +129,7 @@ const Home = () => {
                         }
                     </div>
                 </div>
-                <div className='w-full'>
+                <div className='w-full' onClick={() => setisProfile(false)}>
                     <Routes>
                         <Route path='/*' element={<Projects />} />
                         <Route path='/auth' element={<Signup />} />
@@ -137,7 +137,6 @@ const Home = () => {
                     </Routes>
                 </div>
                 <div className='absolute right-[45px] top-[90px]'
-
                 >
                     {isProfile && <UserProfile Signout={Signout} />}
                 </div>
